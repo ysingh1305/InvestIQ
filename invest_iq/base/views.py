@@ -4,21 +4,26 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm 
 from django.contrib.auth import login 
+from base.forms import RegisterForm
+from django.http import HttpResponse
+
+def homepage(request):
+    return HttpResponse("success")
 
 
 class customLoginView(LoginView):
     template_name = "base/login.html"
     fields = "__all__"
-    redirect_authenticated_user = True 
+    redirect_authenticated_user = False 
 
     def get_success_url(self):
-        return reverse_lazy()
+        return reverse_lazy('homepage')
 
 class RegisterPage(FormView):
     template_name = "base/register.html"
-    form_class = UserCreationForm
+    form_class = RegisterForm 
     redirect_authenticated_user = True
-    success_url = reverse_lazy()
+    success_url = reverse_lazy('login')
 
     def form_valid(self, form):
         user = form.save()
@@ -26,9 +31,8 @@ class RegisterPage(FormView):
             login(self.request, user)
         return super(RegisterPage, self).form_valid(form)
     
-    def get(self, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return redirect()
-        return super(RegisterPage, self).get(*args, **kwargs)
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {'form': self.form_class()})
+    
 
 # Create your views here.
